@@ -2,7 +2,7 @@ import os
 import sys
 import psycopg2
 
-def export_tables_to_csv(postgres_conn_str, output_dir):
+def export_tables_to_csv(postgres_conn_str, schema_str, output_dir):
     # Connect to PostgreSQL
     conn = psycopg2.connect(postgres_conn_str)
     cursor = conn.cursor()
@@ -13,10 +13,10 @@ def export_tables_to_csv(postgres_conn_str, output_dir):
     print(f"Current WAL LSN: {wal_lsn}")
 
     # Fetch all table names
-    cursor.execute("""
+    cursor.execute(f"""
         SELECT table_name
         FROM information_schema.tables
-        WHERE table_schema = 'public'
+        WHERE table_schema = {schema_str}
     """)
     tables = cursor.fetchall()
 
@@ -38,11 +38,12 @@ def export_tables_to_csv(postgres_conn_str, output_dir):
     print("All tables have been exported.")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python export_to_csv.py <postgres_connection_string> <output_directory>")
+    if len(sys.argv) != 4:
+        print("Usage: python export_to_csv.py <postgres_connection_string> <schema_str> <output_directory>")
         sys.exit(1)
 
     postgres_conn_str = sys.argv[1]
-    output_dir = sys.argv[2]
+    schema_str = sys.argv[2}
+    output_dir = sys.argv[3]
 
-    export_tables_to_csv(postgres_conn_str, output_dir)
+    export_tables_to_csv(postgres_conn_str, schema_str, output_dir)
