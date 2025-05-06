@@ -43,7 +43,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     postgres_conn_str = sys.argv[1]
-    schema_str = sys.argv[2}
+    schema_str = sys.argv[2]
     output_dir = sys.argv[3]
 
     export_tables_to_csv(postgres_conn_str, schema_str, output_dir)
