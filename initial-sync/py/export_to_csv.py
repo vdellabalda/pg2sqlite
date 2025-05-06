@@ -16,7 +16,7 @@ def export_tables_to_csv(postgres_conn_str, schema_str, output_dir):
     cursor.execute(f"""
         SELECT table_name
         FROM information_schema.tables
-        WHERE table_schema = {schema_str}
+        WHERE table_schema = '{schema_str}'
     """)
     tables = cursor.fetchall()
 
