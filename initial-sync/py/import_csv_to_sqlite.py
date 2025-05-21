@@ -5,6 +5,19 @@ from pysqlite3 import dbapi2 as sqlite3
 import pandas as pd
 from sqlalchemy import create_engine
 
+def import_large_csv_in_chunks(csv_path, table_name, engine, chunksize=100000):
+    for chunk in pd.read_csv(
+        csv_path,
+        chunksize=chunksize,
+        header=0,
+        keep_default_na=False,
+        na_values=["N/A", "Not Available", "NULL","null"],
+        low_memory=False):
+        
+        # Convert uint64s if needed
+        for col in chunk.select_dtypes(include=['uint64']).columns:
+            chunk[col] = chunk[col].astype('int64')
+        chunk.to_sql(table_name, con=engine, if_exists="append", index=False)
 
 def import_csv_to_sqlite(csv_directory, sqlite_db_file, schema_sql_file=None):
     # Step 1: Load schema into the SQLite database
@@ -29,10 +42,9 @@ def import_csv_to_sqlite(csv_directory, sqlite_db_file, schema_sql_file=None):
     for csv_file in csv_files:
         table_name = os.path.splitext(csv_file)[0]
         csv_file_path = os.path.join(csv_directory, csv_file)
-        df = pd.read_csv(csv_file_path, header=0)  # skips the first row
-
+        
         print(f"📥 Importing {csv_file} into table {table_name}...")
-        df.to_sql(table_name, con=engine, if_exists="append", index=False)
+        import_large_csv_in_chunks(csv_file_path, table_name, engine, chunksize=100000)
 
     print("🎉 All CSV files have been imported.")
 
@@ -46,5 +58,3 @@ if __name__ == "__main__":
     schema_sql_file = sys.argv[3] if len(sys.argv) == 4 else None
 
     import_csv_to_sqlite(csv_directory, sqlite_db_file, schema_sql_file)
-
-
